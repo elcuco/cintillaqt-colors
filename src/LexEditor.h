@@ -64,5 +64,3 @@ Scintilla::NotepadPlusStyle loadXmlStyle(const std::filesystem::path fileName);
 void setStyle(ScintillaEdit *editor, const Scintilla::NotepadPlusStyle &style);
 
 }
-
-
