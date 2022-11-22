@@ -16,6 +16,10 @@ MainWindow::MainWindow(QWidget *parent) :
         theme = ScintillaQt::loadXmlStyle(themeName.toStdString());
         ScintillaQt::setStyle(ui->editor, theme);
         ui->editor->setFocus(true);
+        findLanugages();
+    });
+    connect(ui->syntaxCombo, &QComboBox::currentIndexChanged, [this](int newIndex){
+
     });
 
 
@@ -40,9 +44,18 @@ void MainWindow::findColorDefinitions()
     if (ui->colorsCombo->currentIndex() == -1)  {
         ui->colorsCombo->setCurrentIndex(0);
         ui->editor->setFocus(true);
+        findLanugages();
     }
 }
 
 void MainWindow::findLanugages()
 {
+    ui->syntaxCombo->clear();
+
+    auto lexerNames = QStringList();
+    for (const auto& lexerName: theme.lexerStyles) {
+        lexerNames.append(QString::fromStdString(lexerName.first));
+    }
+    ui->syntaxCombo->addItems(lexerNames);
+    qDebug("Found %lld languages for this theme", lexerNames.count());
 }
