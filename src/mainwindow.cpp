@@ -57,5 +57,5 @@ void MainWindow::findLanugages()
         lexerNames.append(QString::fromStdString(lexerName.first));
     }
     ui->syntaxCombo->addItems(lexerNames);
-    qDebug("Found %lld languages for this theme", lexerNames.count());
+    qDebug("Found %lld languages for theme %s", lexerNames.count(), theme.name.c_str());
 }

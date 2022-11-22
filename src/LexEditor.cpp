@@ -32,6 +32,20 @@ inline std::optional<uint> getNodeAttributeUInt(QDomNode &n, std::string_view na
     return i;
 }
 
+inline std::optional<uint> getNodeAttributeRGBA(QDomNode &n, std::string_view name, int radix=10)
+{
+    auto i = getNodeAttributeUInt(n, name, radix);
+    if (i.has_value()) {
+        auto b = i.value() & 0xff;
+        auto g = i.value() >> 8 & 0xff;
+        auto r = i.value() >> 16 & 0xff;
+        i = r;
+        i = i.value() | g << 8;
+        i = i.value() | b << 16;
+    }
+    return i;
+}
+
 }
 
 namespace ScintillaQt {
@@ -58,6 +72,7 @@ Scintilla::NotepadPlusStyle loadXmlStyle(const std::filesystem::path fileName)
     }
 
     Scintilla::NotepadPlusStyle notepadStyle;
+    notepadStyle.name = fileName.filename().replace_extension().string();
     {
         auto globalStyles = doc.elementsByTagName("GlobalStyles");
         auto styles = globalStyles.at(0).toElement().elementsByTagName("WidgetStyle");
@@ -67,8 +82,8 @@ Scintilla::NotepadPlusStyle loadXmlStyle(const std::filesystem::path fileName)
 
             widgetStyle.styleID = getNodeAttributeUInt(styleNode, "styleID").value_or(-1);
             widgetStyle.name = getNodeAttribute(styleNode, "name");
-            widgetStyle.bgColor = getNodeAttributeUInt(styleNode, "bgColor", 16);
-            widgetStyle.fgColor = getNodeAttributeUInt(styleNode, "fgColor", 16);
+            widgetStyle.bgColor = getNodeAttributeRGBA(styleNode, "bgColor", 16);
+            widgetStyle.fgColor = getNodeAttributeRGBA(styleNode, "fgColor", 16);
             widgetStyle.fontSize = getNodeAttributeUInt(styleNode, "fontSize");
             widgetStyle.fontStyle = getNodeAttributeUInt(styleNode, "fontStyle");
             widgetStyle.fontName = getNodeAttribute(styleNode, "fontName");
@@ -90,8 +105,8 @@ Scintilla::NotepadPlusStyle loadXmlStyle(const std::filesystem::path fileName)
                 auto wordsStyle = Scintilla::WordsStyle{};
                 wordsStyle.name = getNodeAttribute(wordStyleNode, "name");
                 wordsStyle.styleID = getNodeAttributeUInt(wordStyleNode, "styleID").value();
-                wordsStyle.bgColor = getNodeAttributeUInt(wordStyleNode, "bgColor", 16);
-                wordsStyle.fgColor = getNodeAttributeUInt(wordStyleNode, "fgColor", 16);
+                wordsStyle.bgColor = getNodeAttributeRGBA(wordStyleNode, "bgColor", 16);
+                wordsStyle.fgColor = getNodeAttributeRGBA(wordStyleNode, "fgColor", 16);
                 wordsStyle.fontSize = getNodeAttributeUInt(wordStyleNode, "fontSize");
                 wordsStyle.fontStyle = getNodeAttributeUInt(wordStyleNode, "fontStyle");
                 wordsStyle.fontName = getNodeAttribute(wordStyleNode, "fontName");

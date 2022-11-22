@@ -42,6 +42,7 @@ struct LexerStyle
 struct NotepadPlusStyle {
     std::multimap<int,WidgetStyle> globalStyles;
     std::map<std::string,LexerStyle> lexerStyles;
+    std::string name;
 
     // Ideally this would be a `std::optional<const WidgetStyle>`
     inline std::optional<WidgetStyle> findWidgetStyle(std::string_view name, uint styleID) const {
