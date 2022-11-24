@@ -55,6 +55,15 @@ struct NotepadPlusStyle {
         return {};
     }
 
+    // I am unsure if this is a good idea
+    inline std::optional<LexerStyle> getStyleFromIndex(int index) {
+        auto it = lexerStyles.begin();
+        std::advance(it, index);
+        if (it == lexerStyles.end()) {
+            return {};
+        }
+        return it->second;
+    }
 };
 
 }
@@ -63,5 +72,6 @@ namespace ScintillaQt {
 
 Scintilla::NotepadPlusStyle loadXmlStyle(const std::filesystem::path fileName);
 void setStyle(ScintillaEdit *editor, const Scintilla::NotepadPlusStyle &style);
+void setLanguageStyle(ScintillaEdit *editor, const Scintilla::LexerStyle &style);
 
 }

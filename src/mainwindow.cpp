@@ -19,7 +19,10 @@ MainWindow::MainWindow(QWidget *parent) :
         findLanugages();
     });
     connect(ui->syntaxCombo, &QComboBox::currentIndexChanged, [this](int newIndex){
-
+        auto style = theme.getStyleFromIndex(newIndex);
+        if (style.has_value()) {
+            ScintillaQt::setLanguageStyle(ui->editor, style.value());
+        }
     });
 
 

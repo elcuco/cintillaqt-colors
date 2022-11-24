@@ -1,9 +1,14 @@
 #include <QStringView>
 #include <QDomDocument>
 #include <QFile>
-#include <ScintillaEdit.h>
 #include <QApplication>
 #include <QString>
+#include <bitset>
+
+#include <ScintillaEdit.h>
+#include <ILexer.h>
+#include <Lexilla.h>
+
 #include "LexEditor.h"
 
 
@@ -95,12 +100,13 @@ Scintilla::NotepadPlusStyle loadXmlStyle(const std::filesystem::path fileName)
         auto stylesNodes = lexerStylesNodes.at(0).toElement().elementsByTagName("LexerType");
         for (auto l=0; l<stylesNodes.count(); l++) {
             auto lexerTypeNode = stylesNodes.at(l);
-            auto wordsStylesNodes = lexerTypeNode.toElement().elementsByTagName("WordStyle");
             auto lexerStyle = Scintilla::LexerStyle{};
             lexerStyle.name = getNodeAttribute(lexerTypeNode, "name");
             lexerStyle.desc = getNodeAttribute(lexerTypeNode, "desc");
             lexerStyle.ext = getNodeAttribute(lexerTypeNode, "ext");
-            for (auto k=0; k<wordsStylesNodes.count(); k++) {
+
+            auto wordsStylesNodes = lexerTypeNode.toElement().elementsByTagName("WordsStyle");
+            for (auto k=0; k < wordsStylesNodes.count(); k++) {
                 auto wordStyleNode = wordsStylesNodes.at(k);
                 auto wordsStyle = Scintilla::WordsStyle{};
                 wordsStyle.name = getNodeAttribute(wordStyleNode, "name");
@@ -229,16 +235,15 @@ void setStyle(ScintillaEdit *editor, const Scintilla::NotepadPlusStyle &style)
     };
     widgetStyle = style.findWidgetStyle("Fold", 0);
     if (widgetStyle) {
-
+        editor->setFoldMarginColour(true, widgetStyle.value().fgColor.value());
     };
     widgetStyle = style.findWidgetStyle("Fold active", 0);
     if (widgetStyle) {
-
+        editor->setFoldMarginColour(true, widgetStyle.value().fgColor.value());
     };
     widgetStyle = style.findWidgetStyle("Fold margin", 0);
     if (widgetStyle) {
-        editor->setFoldMarginColour(true, widgetStyle.value().fgColor.value());
-        editor->setFoldMarginHiColour(true, widgetStyle.value().bgColor.value());
+        editor->setFoldMarginHiColour(true, widgetStyle.value().fgColor.value());
     };
     widgetStyle = style.findWidgetStyle("White space symbol", 0);
     if (widgetStyle) {
@@ -311,7 +316,31 @@ void setStyle(ScintillaEdit *editor, const Scintilla::NotepadPlusStyle &style)
 
     };
 #endif
+}
 
+void setLanguageStyle(ScintillaEdit *editor, const Scintilla::LexerStyle &style) {
+    auto lexerName = style.name;
+    auto lexer = ::CreateLexer(lexerName.c_str());
+    editor->setProperty("fold", "1");
+    editor->setProperty("fold.compact", "0");
+    editor->setILexer((sptr_t)lexer);
+    for (auto wordStyle: style.wordsStyles) {
+        editor->styleSetFore(wordStyle.second.styleID, wordStyle.second.fgColor.value());
+        editor->styleSetBack(wordStyle.second.styleID, wordStyle.second.bgColor.value());
+
+        if (wordStyle.second.fontStyle.has_value()) {
+            auto bits = std::bitset<16>(wordStyle.second.fontStyle.value());
+            editor->styleSetBold(wordStyle.second.styleID, bits[0]);
+            editor->styleSetItalic(wordStyle.second.styleID, bits[1]);
+            editor->styleSetUnderline(wordStyle.second.styleID, bits[2]);
+            editor->styleSetEOLFilled(wordStyle.second.styleID, bits[3]);
+        }
+    }
+
+    // TODO: add keywords
+//    editor->setKeyWords(keywordID, keywordName);
+    // TODO: add properties
+//    editor->setProperty(key, value);
 }
 
 }
